@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"time"
@@ -30,7 +31,9 @@ func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 	// Ensure directory exists
 	dir := filepath.Dir(a.notePath)
-	os.MkdirAll(dir, 0755)
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		slog.Error("failed to create directory", "dir", dir, "error", err)
+	}
 }
 
 // LoadNote loads the note content from file
