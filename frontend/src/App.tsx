@@ -229,6 +229,178 @@ const completedTodoPlugin = ViewPlugin.fromClass(
     { decorations: (v) => v.decorations }
 )
 
+// ============ Date Picker Component ============
+
+interface DatePickerProps {
+    currentDate: Date
+    position: { x: number; y: number }
+    onSelect: (date: Date) => void
+    onClose: () => void
+}
+
+function DatePicker({ currentDate, position, onSelect, onClose }: DatePickerProps) {
+    const [displayMonth, setDisplayMonth] = useState(new Date(currentDate))
+    const [selectedDay, setSelectedDay] = useState(currentDate.getDate())
+    const today = new Date()
+    const containerRef = useRef<HTMLDivElement>(null)
+
+    // Focus the container when mounted for keyboard navigation
+    useEffect(() => {
+        containerRef.current?.focus()
+    }, [])
+
+    // Sync selectedDay when displayMonth changes
+    useEffect(() => {
+        const daysInMonth = new Date(displayMonth.getFullYear(), displayMonth.getMonth() + 1, 0).getDate()
+        if (selectedDay > daysInMonth) {
+            setSelectedDay(daysInMonth)
+        }
+    }, [displayMonth])
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+        e.preventDefault()
+        const daysInMonth = getDaysInMonth(displayMonth)
+
+        switch (e.key) {
+            case 'ArrowLeft':
+            case 'h':
+                if (selectedDay > 1) {
+                    setSelectedDay(selectedDay - 1)
+                } else {
+                    // Go to previous month, last day
+                    const prevMonth = new Date(displayMonth.getFullYear(), displayMonth.getMonth() - 1, 1)
+                    setDisplayMonth(prevMonth)
+                    setSelectedDay(getDaysInMonth(prevMonth))
+                }
+                break
+            case 'ArrowRight':
+            case 'l':
+                if (selectedDay < daysInMonth) {
+                    setSelectedDay(selectedDay + 1)
+                } else {
+                    // Go to next month, first day
+                    setDisplayMonth(new Date(displayMonth.getFullYear(), displayMonth.getMonth() + 1, 1))
+                    setSelectedDay(1)
+                }
+                break
+            case 'ArrowUp':
+            case 'k':
+                if (selectedDay > 7) {
+                    setSelectedDay(selectedDay - 7)
+                } else {
+                    // Go to previous month
+                    const prevMonth = new Date(displayMonth.getFullYear(), displayMonth.getMonth() - 1, 1)
+                    const prevDaysInMonth = getDaysInMonth(prevMonth)
+                    setDisplayMonth(prevMonth)
+                    setSelectedDay(Math.min(prevDaysInMonth, selectedDay + prevDaysInMonth - 7))
+                }
+                break
+            case 'ArrowDown':
+            case 'j':
+                if (selectedDay + 7 <= daysInMonth) {
+                    setSelectedDay(selectedDay + 7)
+                } else {
+                    // Go to next month
+                    const nextMonth = new Date(displayMonth.getFullYear(), displayMonth.getMonth() + 1, 1)
+                    setDisplayMonth(nextMonth)
+                    setSelectedDay(Math.min(getDaysInMonth(nextMonth), selectedDay + 7 - daysInMonth))
+                }
+                break
+            case 'Enter':
+                onSelect(new Date(displayMonth.getFullYear(), displayMonth.getMonth(), selectedDay))
+                break
+            case 'Escape':
+                onClose()
+                break
+            case 't':
+            case 'T':
+                onSelect(today)
+                break
+        }
+    }
+
+    const getDaysInMonth = (date: Date) => {
+        return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()
+    }
+
+    const getFirstDayOfMonth = (date: Date) => {
+        return new Date(date.getFullYear(), date.getMonth(), 1).getDay()
+    }
+
+    const isSameDay = (d1: Date, d2: Date) => {
+        return d1.getFullYear() === d2.getFullYear() &&
+            d1.getMonth() === d2.getMonth() &&
+            d1.getDate() === d2.getDate()
+    }
+
+    const prevMonth = () => {
+        setDisplayMonth(new Date(displayMonth.getFullYear(), displayMonth.getMonth() - 1, 1))
+    }
+
+    const nextMonth = () => {
+        setDisplayMonth(new Date(displayMonth.getFullYear(), displayMonth.getMonth() + 1, 1))
+    }
+
+    const handleDayClick = (day: number) => {
+        const selected = new Date(displayMonth.getFullYear(), displayMonth.getMonth(), day)
+        onSelect(selected)
+    }
+
+    const daysInMonth = getDaysInMonth(displayMonth)
+    const firstDay = getFirstDayOfMonth(displayMonth)
+    const days: (number | null)[] = []
+
+    // Add empty cells for days before the first day
+    for (let i = 0; i < firstDay; i++) {
+        days.push(null)
+    }
+    // Add days of the month
+    for (let i = 1; i <= daysInMonth; i++) {
+        days.push(i)
+    }
+
+    const weekDays = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
+
+    return (
+        <div
+            ref={containerRef}
+            class="date-picker"
+            style={{ left: `${position.x}px`, top: `${position.y}px` }}
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={handleKeyDown}
+            tabIndex={0}
+        >
+            <div class="date-picker-header">
+                <button class="date-picker-nav" onClick={prevMonth}>&lt;</button>
+                <span class="date-picker-month">
+                    {displayMonth.toLocaleDateString('ja-JP', { year: 'numeric', month: 'long' })}
+                </span>
+                <button class="date-picker-nav" onClick={nextMonth}>&gt;</button>
+            </div>
+            <div class="date-picker-weekdays">
+                {weekDays.map(day => (
+                    <div key={day} class="date-picker-weekday">{day}</div>
+                ))}
+            </div>
+            <div class="date-picker-grid">
+                {days.map((day, i) => (
+                    <div
+                        key={i}
+                        class={`date-picker-day ${day === null ? 'empty' : ''} ${day && isSameDay(new Date(displayMonth.getFullYear(), displayMonth.getMonth(), day), today) ? 'today' : ''} ${day && isSameDay(new Date(displayMonth.getFullYear(), displayMonth.getMonth(), day), currentDate) ? 'selected' : ''} ${day === selectedDay ? 'focused' : ''}`}
+                        onClick={() => day && handleDayClick(day)}
+                    >
+                        {day}
+                    </div>
+                ))}
+            </div>
+            <div class="date-picker-footer">
+                <button class="date-picker-today" onClick={() => onSelect(today)}>Today</button>
+                <button class="date-picker-close" onClick={onClose}>Cancel</button>
+            </div>
+        </div>
+    )
+}
+
 // ============ TODO Pane Component ============
 
 interface TodoPaneProps {
@@ -296,11 +468,22 @@ function TodoPane({ todos, onTodoClick }: TodoPaneProps) {
 
 // ============ Main App ============
 
+interface DatePickerState {
+    visible: boolean
+    position: { x: number; y: number }
+    dateInfo: { start: number; end: number; date: Date } | null
+}
+
 function App() {
     const [content, setContent] = useState('')
     const [lastSavedContent, setLastSavedContent] = useState('')
     const [isLoaded, setIsLoaded] = useState(false)
     const [showTodoPane, setShowTodoPane] = useState(false)
+    const [datePickerState, setDatePickerState] = useState<DatePickerState>({
+        visible: false,
+        position: { x: 0, y: 0 },
+        dateInfo: null
+    })
     const editorContainerRef = useRef<HTMLDivElement>(null)
     const editorViewRef = useRef<EditorView | null>(null)
 
@@ -362,6 +545,12 @@ function App() {
             {
                 key: 'Enter',
                 run: (view) => {
+                    // Check if cursor is on a TODO date and show date picker
+                    const dateInfo = isOnTodoDate(view)
+                    if (dateInfo) {
+                        showDatePicker(view, dateInfo)
+                        return true
+                    }
                     // Check if cursor is on a TODO symbol and cycle it
                     if (cycleTodoSymbol(view)) {
                         return true
@@ -490,6 +679,95 @@ function App() {
         return () => clearInterval(interval)
     }, [content, lastSavedContent])
 
+    // Close date picker when clicking outside
+    useEffect(() => {
+        if (!datePickerState.visible) return
+
+        const handleClickOutside = () => {
+            setDatePickerState(prev => ({ ...prev, visible: false }))
+            editorViewRef.current?.focus()
+        }
+
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                setDatePickerState(prev => ({ ...prev, visible: false }))
+                editorViewRef.current?.focus()
+            }
+        }
+
+        document.addEventListener('click', handleClickOutside)
+        document.addEventListener('keydown', handleKeyDown)
+        return () => {
+            document.removeEventListener('click', handleClickOutside)
+            document.removeEventListener('keydown', handleKeyDown)
+        }
+    }, [datePickerState.visible])
+
+    const isOnTodoDate = (view: EditorView): { start: number; end: number; date: Date } | null => {
+        const pos = view.state.selection.main.head
+        const doc = view.state.doc.toString()
+
+        // Search around cursor position for [YYYY-MM-DD] pattern
+        const searchStart = Math.max(0, pos - 12)
+        const searchEnd = Math.min(doc.length, pos + 12)
+        const around = doc.substring(searchStart, searchEnd)
+
+        const regex = /\[(\d{4}-\d{2}-\d{2})\]/g
+        let match
+        while ((match = regex.exec(around)) !== null) {
+            const matchStart = searchStart + match.index
+            const matchEnd = matchStart + match[0].length
+            // Check if cursor is inside the date brackets (after [ and before ])
+            if (pos > matchStart && pos < matchEnd) {
+                return {
+                    start: matchStart + 1,  // After [
+                    end: matchEnd - 1,      // Before ]
+                    date: new Date(match[1])
+                }
+            }
+        }
+        return null
+    }
+
+    const showDatePicker = (view: EditorView, dateInfo: { start: number; end: number; date: Date }) => {
+        const coords = view.coordsAtPos(dateInfo.start)
+        if (coords) {
+            // Check if calendar would go below viewport
+            const calendarHeight = 320 // Approximate height of calendar
+            const spaceBelow = window.innerHeight - coords.bottom
+            const showAbove = spaceBelow < calendarHeight
+
+            setDatePickerState({
+                visible: true,
+                position: {
+                    x: coords.left,
+                    y: showAbove ? coords.top - calendarHeight - 5 : coords.bottom + 5
+                },
+                dateInfo
+            })
+        }
+    }
+
+    const handleDateSelect = (newDate: Date) => {
+        const view = editorViewRef.current
+        if (!view || !datePickerState.dateInfo) return
+
+        const { start, end } = datePickerState.dateInfo
+        const newDateStr = `${newDate.getFullYear()}-${String(newDate.getMonth() + 1).padStart(2, '0')}-${String(newDate.getDate()).padStart(2, '0')}`
+
+        view.dispatch({
+            changes: { from: start, to: end, insert: newDateStr }
+        })
+
+        setDatePickerState({ visible: false, position: { x: 0, y: 0 }, dateInfo: null })
+        view.focus()
+    }
+
+    const closeDatePicker = () => {
+        setDatePickerState({ visible: false, position: { x: 0, y: 0 }, dateInfo: null })
+        editorViewRef.current?.focus()
+    }
+
     const insertTodo = (view: EditorView) => {
         const now = new Date()
         const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
@@ -613,6 +891,14 @@ function App() {
                 <TodoPane todos={sortedTodos} onTodoClick={handleTodoClick} />
             )}
             <div ref={editorContainerRef} class="editor-container" />
+            {datePickerState.visible && datePickerState.dateInfo && (
+                <DatePicker
+                    currentDate={datePickerState.dateInfo.date}
+                    position={datePickerState.position}
+                    onSelect={handleDateSelect}
+                    onClose={closeDatePicker}
+                />
+            )}
         </div>
     )
 }
