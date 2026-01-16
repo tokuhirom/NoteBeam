@@ -590,7 +590,8 @@ function App() {
 
         view.dispatch({
             changes: { from: 0, to: currentContent.length, insert: newContent },
-            selection: { anchor: cursorPosition }
+            selection: { anchor: cursorPosition },
+            scrollIntoView: true
         })
     }
 
