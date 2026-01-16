@@ -186,3 +186,131 @@
     opacity: 0.6;
     color: #888;
 }
+
+/* Date Picker */
+.date-picker {
+    position: fixed;
+    background: #2d2d2d;
+    border: 1px solid #3d3d3d;
+    border-radius: 8px;
+    padding: 12px;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 13px;
+    color: #cccccc;
+    min-width: 240px;
+}
+
+.date-picker-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.date-picker-month {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.date-picker-nav {
+    background: #3d3d3d;
+    border: none;
+    color: #cccccc;
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.date-picker-nav:hover {
+    background: #4d4d4d;
+}
+
+.date-picker-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+    margin-bottom: 4px;
+}
+
+.date-picker-weekday {
+    text-align: center;
+    font-size: 11px;
+    color: #888;
+    padding: 4px;
+}
+
+.date-picker-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+}
+
+.date-picker-day {
+    text-align: center;
+    padding: 8px 4px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.1s;
+}
+
+.date-picker-day:hover:not(.empty) {
+    background: #3d3d3d;
+}
+
+.date-picker-day.empty {
+    cursor: default;
+}
+
+.date-picker-day.today {
+    background: #4d4d4d;
+    font-weight: 600;
+}
+
+.date-picker-day.selected {
+    background: #0e639c;
+    color: white;
+}
+
+.date-picker-day.selected.today {
+    background: #0e639c;
+}
+
+.date-picker-day.focused {
+    outline: 2px solid #0e639c;
+    outline-offset: -2px;
+}
+
+.date-picker:focus {
+    outline: none;
+}
+
+.date-picker-footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 12px;
+    gap: 8px;
+}
+
+.date-picker-today,
+.date-picker-close {
+    flex: 1;
+    background: #3d3d3d;
+    border: none;
+    color: #cccccc;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.date-picker-today:hover,
+.date-picker-close:hover {
+    background: #4d4d4d;
+}
