@@ -1,19 +1,53 @@
-# README
+# NoteBeam
 
-## About
+NoteBeam はお手軽に使えるメモアプリです。Mac 用です。
 
-This is the official Wails React-TS template.
+基本的には1ファイルだけのメモアプリ。フォーマットは以下のような形。
 
-You can configure the project by editing `wails.json`. More information about the project settings can be found
-here: https://wails.io/docs/reference/project-config
+デフォルトでは `~/Documents/NoteBeam/index.md` に保存されます。
 
-## Live Development
+```markdown
+# 2026-01-16 (Fri)
 
-To run in live development mode, run `wails dev` in the project directory. This will run a Vite development
-server that will provide very fast hot reload of your frontend changes. If you want to develop in a browser
-and have access to your Go methods, there is also a dev server that runs on http://localhost:34115. Connect
-to this in your browser, and you can call your Go code from devtools.
+## 23:01
 
-## Building
+開発開始
 
-To build a redistributable, production mode package, use `wails build`.
+# 2026-01-15 (Thu)
+
+## 23:59
+
+寝ます
+```
+
+## Features
+
+- **Cmd-N**: 新しいエントリを追加。今日の日付がなければ先頭に日付ヘッダーを追加、あれば今日のセクションに時刻エントリを追加
+- **Cmd-F**: 検索機能
+- **自動保存**: 1秒ごとに自動保存
+- **シンタックスハイライト**: Markdown の見出し、コードブロック内の各言語をハイライト表示
+- **画像ペースト**: Cmd-V で画像をペーストすると `images/YYYYMMDDHHMMSS.png` に保存され、インラインプレビュー表示
+
+## Motivation
+
+なんかふと作りたくなったので。
+
+LogSeq わりと良かったんだけど、なんかこう。。Outliner じゃなくて良いなって気分になったんですよね。
+
+## Architecture
+
+Wails + Preact + TypeScript + CodeMirror 6
+
+## Development
+
+```bash
+# 開発モード
+wails dev
+
+# ビルド
+wails build
+```
+
+## LICENSE
+
+MIT
