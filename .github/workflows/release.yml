@@ -34,10 +34,11 @@ jobs:
       - name: Build for macOS (arm64)
         run: wails build -platform darwin/arm64
 
-      - name: Create zip
+      - name: Create zip (arm64)
         run: |
           cd build/bin
           zip -r NoteBeam_${{ github.ref_name }}_darwin_arm64.zip NoteBeam.app
+          mv NoteBeam_${{ github.ref_name }}_darwin_arm64.zip /tmp/
 
       - name: Build for macOS (amd64)
         run: |
@@ -48,6 +49,7 @@ jobs:
         run: |
           cd build/bin
           zip -r NoteBeam_${{ github.ref_name }}_darwin_amd64.zip NoteBeam.app
+          mv /tmp/NoteBeam_${{ github.ref_name }}_darwin_arm64.zip .
 
       - name: Calculate checksums
         id: checksums
