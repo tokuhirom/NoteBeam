@@ -942,18 +942,20 @@ function App() {
 
             if (nextDateIndex === -1) {
                 newContent = currentContent.trimEnd() + '\n\n' + timeHeader + '\n\n'
-                cursorPosition = newContent.length
+                // timeHeader の後の空行にカーソル
+                cursorPosition = currentContent.trimEnd().length + 2 + timeHeader.length + 2
             } else {
                 const beforeNext = currentContent.substring(0, nextDateIndex).trimEnd()
                 const afterNext = currentContent.substring(nextDateIndex)
-                // timeHeader の後に空行2つ + 次の日付ヘッダーとの間にもう1行
+                // timeHeader の後に空行 + 次の日付ヘッダーとの間にもう1行
                 newContent = beforeNext + '\n\n' + timeHeader + '\n\n\n' + afterNext
-                // カーソルは timeHeader の次の行（最初の空行）に配置
-                cursorPosition = beforeNext.length + 2 + timeHeader.length + 1
+                // timeHeader の後の空行にカーソル
+                cursorPosition = beforeNext.length + 2 + timeHeader.length + 2
             }
         } else {
             newContent = dateHeader + '\n\n' + timeHeader + '\n\n' + currentContent
-            cursorPosition = dateHeader.length + timeHeader.length + 4
+            // timeHeader の後の空行にカーソル
+            cursorPosition = dateHeader.length + 2 + timeHeader.length + 2
         }
 
         view.dispatch({
