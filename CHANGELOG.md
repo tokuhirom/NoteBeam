@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.0.6](https://github.com/tokuhirom/NoteBeam/compare/v0.0.5...v0.0.6) - 2026-01-17
+- chore: bump version to 0.0.6 by @tokuhirom in https://github.com/tokuhirom/NoteBeam/pull/21
+
 ## [v0.0.5](https://github.com/tokuhirom/NoteBeam/compare/v0.0.4...v0.0.5) - 2026-01-17
 - feat: Add Homebrew Cask support by @tokuhirom in https://github.com/tokuhirom/NoteBeam/pull/19
 
