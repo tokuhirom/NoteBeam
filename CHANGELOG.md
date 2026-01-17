@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.0.7](https://github.com/tokuhirom/NoteBeam/compare/v0.0.6...v0.0.7) - 2026-01-17
+- fix: validate checksums and env vars before updating Cask by @tokuhirom in https://github.com/tokuhirom/NoteBeam/pull/23
+
 ## [v0.0.6](https://github.com/tokuhirom/NoteBeam/compare/v0.0.5...v0.0.6) - 2026-01-17
 - chore: bump version to 0.0.6 by @tokuhirom in https://github.com/tokuhirom/NoteBeam/pull/21
 
