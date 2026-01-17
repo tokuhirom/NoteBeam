@@ -14,8 +14,16 @@ NoteBeam はデータ損失を防ぐため、自動バックアップ機能を�
 
 ## ディレクトリ構造
 
+データは OS 標準のアプリケーションデータディレクトリに保存されます:
+
+| OS | ディレクトリ |
+|----|------------|
+| macOS | `~/Library/Application Support/NoteBeam/` |
+| Windows | `%AppData%\NoteBeam\` |
+| Linux | `~/.local/share/NoteBeam/` (XDG_DATA_HOME) |
+
 ```
-~/Documents/NoteBeam/
+<data-dir>/NoteBeam/
 ├── index.md              # メインファイル
 ├── index.md.bak          # 直前の状態（毎回更新）
 ├── images/               # 画像ファイル
@@ -31,14 +39,16 @@ NoteBeam はデータ損失を防ぐため、自動バックアップ機能を�
 ### 直前の状態に戻す
 
 ```bash
-cd ~/Documents/NoteBeam
+# macOS の場合
+cd ~/Library/Application\ Support/NoteBeam
 cp index.md.bak index.md
 ```
 
 ### 特定の日の状態に戻す
 
 ```bash
-cd ~/Documents/NoteBeam
+# macOS の場合
+cd ~/Library/Application\ Support/NoteBeam
 cp backups/index.2026-01-17.md index.md
 ```
 
