@@ -98,6 +98,9 @@ CANCELED[Scheduled:2026-01-17]:キャンセルしたタスク
 | **Enter** | TYPE上で押すとサイクル: `TODO` → `DOING` → `DONE` → `TODO` |
 | **Enter** | 日付上で押すとカレンダーピッカーを表示 |
 | **`.`** | TYPE上で押すと完了（DONE）に変換 |
+| **`c`** | TYPE上で押すと CANCELED に変換 |
+| **`n`** | TYPE上で押すと NOTE に変換 |
+| **`p`** | TYPE上で押すと PLAN に変換 |
 | **Cmd-Shift-T** | TODO ペインを表示/非表示 |
 
 ### 日付変更（カレンダーピッカー）

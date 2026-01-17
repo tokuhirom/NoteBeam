@@ -82,8 +82,16 @@ function calculatePriority(todo: TodoItem, now: Date): number {
     // DOING items always float to top
     if (todo.type === 'DOING') return 3000
 
-    // Use deadline date if available, otherwise scheduled date
-    const targetDate = todo.deadlineDate || todo.scheduledDate
+    // If has deadline, use deadline-based priority calculation
+    if (todo.deadlineDate) {
+        const daysDiff = (now.getTime() - todo.deadlineDate.getTime()) / msPerDay
+        // Deadline: floats as it approaches, sinks after it passes
+        if (daysDiff > 0) return Math.max(-1000, 500 - daysDiff * 100) // Past: sink
+        return 2000 + daysDiff * 100 // Approaching: higher priority (daysDiff is negative)
+    }
+
+    // Use scheduled date for other calculations
+    const targetDate = todo.scheduledDate
     if (!targetDate) return 500 // No date: medium priority
 
     const daysDiff = (now.getTime() - targetDate.getTime()) / msPerDay
@@ -572,6 +580,36 @@ function App() {
                 }
             },
             {
+                key: 'c',
+                run: (view) => {
+                    // Change to CANCELED when cursor is on TODO type
+                    if (changeTodoType(view, 'CANCELED')) {
+                        return true
+                    }
+                    return false // Let default "c" input happen
+                }
+            },
+            {
+                key: 'n',
+                run: (view) => {
+                    // Change to NOTE when cursor is on TODO type
+                    if (changeTodoType(view, 'NOTE')) {
+                        return true
+                    }
+                    return false // Let default "n" input happen
+                }
+            },
+            {
+                key: 'p',
+                run: (view) => {
+                    // Change to PLAN when cursor is on TODO type
+                    if (changeTodoType(view, 'PLAN')) {
+                        return true
+                    }
+                    return false // Let default "p" input happen
+                }
+            },
+            {
                 key: 'Escape',
                 run: (view) => {
                     closeSearchPanel(view)
@@ -851,6 +889,31 @@ function App() {
                     view.dispatch({
                         changes: { from: typeStart, to: typeStart + bracketEnd + 1, insert: newText },
                         selection: { anchor: typeStart }
+                    })
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
+    const changeTodoType = (view: EditorView, newType: TodoType): boolean => {
+        const pos = view.state.selection.main.head
+        const line = view.state.doc.lineAt(pos)
+        const lineText = line.text
+
+        // Check if line starts with a TODO type
+        const types = ['TODO', 'DOING', 'DONE', 'PLAN', 'NOTE', 'CANCELED']
+        for (const type of types) {
+            if (lineText.startsWith(type + '[')) {
+                const typeStart = line.from
+                const typeEnd = typeStart + type.length
+
+                // Check if cursor is on the type
+                if (pos >= typeStart && pos <= typeEnd) {
+                    view.dispatch({
+                        changes: { from: typeStart, to: typeEnd, insert: newType },
+                        selection: { anchor: typeStart + newType.length }
                     })
                     return true
                 }
