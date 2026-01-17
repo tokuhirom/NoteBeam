@@ -32,6 +32,17 @@ NoteBeam はお手軽に使えるメモアプリです。Mac 用です。
 
 ## Installation
 
+### Homebrew でインストール（推奨）
+
+```bash
+brew install tokuhirom/tap/notebeam
+```
+
+**注意**: このアプリは署名されていないため、初回起動前に以下のコマンドを実行してください:
+```bash
+xattr -cr /Applications/NoteBeam.app
+```
+
 ### Releases からインストール
 
 1. [Releases ページ](https://github.com/tokuhirom/NoteBeam/releases)から最新版をダウンロード
