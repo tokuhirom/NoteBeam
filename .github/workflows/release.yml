@@ -54,6 +54,20 @@ jobs:
         run: |
           ARM64_SHA256=$(shasum -a 256 build/bin/NoteBeam_${{ github.ref_name }}_darwin_arm64.zip | awk '{print $1}')
           AMD64_SHA256=$(shasum -a 256 build/bin/NoteBeam_${{ github.ref_name }}_darwin_amd64.zip | awk '{print $1}')
+
+          # Validate checksums are not empty
+          if [ -z "$ARM64_SHA256" ]; then
+            echo "ERROR: Failed to calculate ARM64 checksum"
+            exit 1
+          fi
+          if [ -z "$AMD64_SHA256" ]; then
+            echo "ERROR: Failed to calculate AMD64 checksum"
+            exit 1
+          fi
+
+          echo "ARM64 SHA256: $ARM64_SHA256"
+          echo "AMD64 SHA256: $AMD64_SHA256"
+
           echo "arm64_sha256=$ARM64_SHA256" >> $GITHUB_OUTPUT
           echo "amd64_sha256=$AMD64_SHA256" >> $GITHUB_OUTPUT
           VERSION="${{ github.ref_name }}"
@@ -73,33 +87,45 @@ jobs:
           ARM64_SHA256: ${{ steps.checksums.outputs.arm64_sha256 }}
           AMD64_SHA256: ${{ steps.checksums.outputs.amd64_sha256 }}
         run: |
+          # Validate environment variables
+          if [ -z "$TAP_GITHUB_TOKEN" ]; then
+            echo "ERROR: TAP_GITHUB_TOKEN is not set"
+            exit 1
+          fi
+          if [ -z "$VERSION" ]; then
+            echo "ERROR: VERSION is not set"
+            exit 1
+          fi
+          if [ -z "$ARM64_SHA256" ]; then
+            echo "ERROR: ARM64_SHA256 is not set"
+            exit 1
+          fi
+          if [ -z "$AMD64_SHA256" ]; then
+            echo "ERROR: AMD64_SHA256 is not set"
+            exit 1
+          fi
+
           git clone https://x-access-token:${TAP_GITHUB_TOKEN}@github.com/tokuhirom/homebrew-tap.git
           cd homebrew-tap
 
           mkdir -p Casks
           cat > Casks/notebeam.rb <<EOF
-          cask "notebeam" do
-            arch arm: "arm64", intel: "amd64"
+cask "notebeam" do
+  arch arm: "arm64", intel: "amd64"
 
-            version "${VERSION}"
-            sha256 arm:   "${ARM64_SHA256}",
-                   intel: "${AMD64_SHA256}"
+  version "${VERSION}"
+  sha256 arm: "${ARM64_SHA256}", intel: "${AMD64_SHA256}"
 
-            url "https://github.com/tokuhirom/NoteBeam/releases/download/v#{version}/NoteBeam_v#{version}_darwin_#{arch}.zip"
-            name "NoteBeam"
-            desc "Simple memo app for Mac"
-            homepage "https://github.com/tokuhirom/NoteBeam"
+  url "https://github.com/tokuhirom/NoteBeam/releases/download/v#{version}/NoteBeam_v#{version}_darwin_#{arch}.zip"
+  name "NoteBeam"
+  desc "Simple memo app for Mac"
+  homepage "https://github.com/tokuhirom/NoteBeam"
 
-            app "NoteBeam.app"
+  app "NoteBeam.app"
 
-            zap trash: [
-              "~/Documents/NoteBeam",
-            ]
-          end
-          EOF
-
-          # Remove leading spaces from heredoc
-          sed -i '' 's/^          //' Casks/notebeam.rb
+  zap trash: "~/Documents/NoteBeam"
+end
+EOF
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
