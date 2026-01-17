@@ -31,65 +31,40 @@ jobs:
         run: npm ci
         working-directory: frontend
 
-      - name: Build for macOS (arm64)
-        run: wails build -platform darwin/arm64
+      - name: Build for macOS (universal)
+        run: wails build -platform darwin/universal
 
-      - name: Create zip (arm64)
+      - name: Create zip
         run: |
           cd build/bin
-          zip -r NoteBeam_${{ github.ref_name }}_darwin_arm64.zip NoteBeam.app
-          mv NoteBeam_${{ github.ref_name }}_darwin_arm64.zip /tmp/
+          zip -r NoteBeam_${{ github.ref_name }}_darwin_universal.zip NoteBeam.app
 
-      - name: Build for macOS (amd64)
+      - name: Calculate checksum
+        id: checksum
         run: |
-          rm -rf build/bin
-          wails build -platform darwin/amd64
+          SHA256=$(shasum -a 256 build/bin/NoteBeam_${{ github.ref_name }}_darwin_universal.zip | awk '{print $1}')
 
-      - name: Create zip (amd64)
-        run: |
-          cd build/bin
-          zip -r NoteBeam_${{ github.ref_name }}_darwin_amd64.zip NoteBeam.app
-          mv /tmp/NoteBeam_${{ github.ref_name }}_darwin_arm64.zip .
-
-      - name: Calculate checksums
-        id: checksums
-        run: |
-          ARM64_SHA256=$(shasum -a 256 build/bin/NoteBeam_${{ github.ref_name }}_darwin_arm64.zip | awk '{print $1}')
-          AMD64_SHA256=$(shasum -a 256 build/bin/NoteBeam_${{ github.ref_name }}_darwin_amd64.zip | awk '{print $1}')
-
-          # Validate checksums are not empty
-          if [ -z "$ARM64_SHA256" ]; then
-            echo "ERROR: Failed to calculate ARM64 checksum"
-            exit 1
-          fi
-          if [ -z "$AMD64_SHA256" ]; then
-            echo "ERROR: Failed to calculate AMD64 checksum"
+          if [ -z "$SHA256" ]; then
+            echo "ERROR: Failed to calculate checksum"
             exit 1
           fi
 
-          echo "ARM64 SHA256: $ARM64_SHA256"
-          echo "AMD64 SHA256: $AMD64_SHA256"
-
-          echo "arm64_sha256=$ARM64_SHA256" >> $GITHUB_OUTPUT
-          echo "amd64_sha256=$AMD64_SHA256" >> $GITHUB_OUTPUT
+          echo "SHA256: $SHA256"
+          echo "sha256=$SHA256" >> $GITHUB_OUTPUT
           VERSION="${{ github.ref_name }}"
           echo "version=${VERSION#v}" >> $GITHUB_OUTPUT
 
       - name: Upload to Release
         uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2.5.0
         with:
-          files: |
-            build/bin/NoteBeam_${{ github.ref_name }}_darwin_arm64.zip
-            build/bin/NoteBeam_${{ github.ref_name }}_darwin_amd64.zip
+          files: build/bin/NoteBeam_${{ github.ref_name }}_darwin_universal.zip
 
       - name: Update Homebrew Cask
         env:
           TAP_GITHUB_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN }}
-          VERSION: ${{ steps.checksums.outputs.version }}
-          ARM64_SHA256: ${{ steps.checksums.outputs.arm64_sha256 }}
-          AMD64_SHA256: ${{ steps.checksums.outputs.amd64_sha256 }}
+          VERSION: ${{ steps.checksum.outputs.version }}
+          SHA256: ${{ steps.checksum.outputs.sha256 }}
         run: |
-          # Validate environment variables
           if [ -z "$TAP_GITHUB_TOKEN" ]; then
             echo "ERROR: TAP_GITHUB_TOKEN is not set"
             exit 1
@@ -98,12 +73,8 @@ jobs:
             echo "ERROR: VERSION is not set"
             exit 1
           fi
-          if [ -z "$ARM64_SHA256" ]; then
-            echo "ERROR: ARM64_SHA256 is not set"
-            exit 1
-          fi
-          if [ -z "$AMD64_SHA256" ]; then
-            echo "ERROR: AMD64_SHA256 is not set"
+          if [ -z "$SHA256" ]; then
+            echo "ERROR: SHA256 is not set"
             exit 1
           fi
 
@@ -113,12 +84,10 @@ jobs:
           mkdir -p Casks
           printf '%s\n' \
             'cask "notebeam" do' \
-            '  arch arm: "arm64", intel: "amd64"' \
-            '' \
             "  version \"${VERSION}\"" \
-            "  sha256 arm: \"${ARM64_SHA256}\", intel: \"${AMD64_SHA256}\"" \
+            "  sha256 \"${SHA256}\"" \
             '' \
-            '  url "https://github.com/tokuhirom/NoteBeam/releases/download/v#{version}/NoteBeam_v#{version}_darwin_#{arch}.zip"' \
+            '  url "https://github.com/tokuhirom/NoteBeam/releases/download/v#{version}/NoteBeam_v#{version}_darwin_universal.zip"' \
             '  name "NoteBeam"' \
             '  desc "Simple memo app for Mac"' \
             '  homepage "https://github.com/tokuhirom/NoteBeam"' \
