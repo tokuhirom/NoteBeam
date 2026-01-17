@@ -547,7 +547,10 @@ function App() {
             {
                 key: 'Mod-t',
                 run: (view) => {
-                    insertTodo(view)
+                    // If on a TODO type, cycle it; otherwise insert new TODO
+                    if (!cycleTodoType(view)) {
+                        insertTodo(view)
+                    }
                     return true
                 }
             },

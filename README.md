@@ -111,8 +111,7 @@ CANCELED[Scheduled:2026-01-17]:キャンセルしたタスク
 
 | キー | 動作 |
 |------|------|
-| **Cmd-T** | TODO を挿入 `TODO[Scheduled:2026-01-17]:` |
-| **Enter** | TYPE上で押すとサイクル: `TODO` → `DOING` → `DONE` → `TODO` |
+| **Cmd-T** | TODO を挿入、または TYPE 上ならサイクル: `TODO` → `DOING` → `DONE` |
 | **Enter** | 日付上で押すとカレンダーピッカーを表示 |
 | **`.`** | TYPE上で押すと完了（DONE）に変換 |
 | **`c`** | TYPE上で押すと CANCELED に変換 |
