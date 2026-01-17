@@ -4,7 +4,13 @@ NoteBeam はお手軽に使えるメモアプリです。Mac 用です。
 
 基本的には1ファイルだけのメモアプリ。フォーマットは以下のような形。
 
-デフォルトでは `~/Documents/NoteBeam/index.md` に保存されます。
+データは OS 標準のアプリケーションデータディレクトリに保存されます:
+
+| OS | パス |
+|----|------|
+| macOS | `~/Library/Application Support/NoteBeam/index.md` |
+| Windows | `%AppData%\NoteBeam\index.md` |
+| Linux | `~/.local/share/NoteBeam/index.md` (XDG_DATA_HOME)
 
 ```markdown
 # 2026-01-16 (Fri)

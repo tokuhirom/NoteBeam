@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"runtime"
 	"time"
 )
 
@@ -19,10 +20,34 @@ type App struct {
 	lastDailyBackup   string // Track the date of last daily backup (YYYY-MM-DD)
 }
 
+// getDataDir returns the OS-specific application data directory
+// macOS:   ~/Library/Application Support
+// Windows: %AppData%
+// Linux:   ~/.local/share (XDG_DATA_HOME)
+func getDataDir() string {
+	switch runtime.GOOS {
+	case "darwin":
+		home, _ := os.UserHomeDir()
+		return filepath.Join(home, "Library", "Application Support")
+	case "windows":
+		if dir := os.Getenv("APPDATA"); dir != "" {
+			return dir
+		}
+		home, _ := os.UserHomeDir()
+		return filepath.Join(home, "AppData", "Roaming")
+	default: // Linux, BSD, etc.
+		if dir := os.Getenv("XDG_DATA_HOME"); dir != "" {
+			return dir
+		}
+		home, _ := os.UserHomeDir()
+		return filepath.Join(home, ".local", "share")
+	}
+}
+
 // NewApp creates a new App application struct
 func NewApp() *App {
-	homeDir, _ := os.UserHomeDir()
-	notePath := filepath.Join(homeDir, "Documents", "NoteBeam", "index.md")
+	dataDir := getDataDir()
+	notePath := filepath.Join(dataDir, "NoteBeam", "index.md")
 	return &App{
 		notePath: notePath,
 	}
