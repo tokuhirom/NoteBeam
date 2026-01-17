@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.0.15](https://github.com/tokuhirom/NoteBeam/compare/v0.0.14...v0.0.15) - 2026-01-17
+- feat: use OS-specific application data directory by @tokuhirom in https://github.com/tokuhirom/NoteBeam/pull/43
+
 ## [v0.0.14](https://github.com/tokuhirom/NoteBeam/compare/v0.0.13...v0.0.14) - 2026-01-17
 - fix: place cursor on empty line after time header in Cmd-N by @tokuhirom in https://github.com/tokuhirom/NoteBeam/pull/39
 - feat: add backup strategy with .bak and daily backups by @tokuhirom in https://github.com/tokuhirom/NoteBeam/pull/42
