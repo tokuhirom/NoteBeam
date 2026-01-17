@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.0.3](https://github.com/tokuhirom/NoteBeam/compare/v0.0.2...v0.0.3) - 2026-01-17
+- READMEにReleasesからのインストール手順を追加 by @tokuhirom in https://github.com/tokuhirom/NoteBeam/pull/11
+
 ## [v0.0.2](https://github.com/tokuhirom/NoteBeam/compare/v0.0.1...v0.0.2) - 2026-01-16
 - Add date picker for TODO date editing by @tokuhirom in https://github.com/tokuhirom/NoteBeam/pull/9
 
