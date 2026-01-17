@@ -1,5 +1,9 @@
 # Changelog
 
+## [v0.0.4](https://github.com/tokuhirom/NoteBeam/compare/v0.0.3...v0.0.4) - 2026-01-17
+- feat: Add deadline priority and type change keybindings by @tokuhirom in https://github.com/tokuhirom/NoteBeam/pull/16
+- Add space after colon in insertTodo by @tokuhirom in https://github.com/tokuhirom/NoteBeam/pull/17
+
 ## [v0.0.3](https://github.com/tokuhirom/NoteBeam/compare/v0.0.2...v0.0.3) - 2026-01-17
 - READMEにReleasesからのインストール手順を追加 by @tokuhirom in https://github.com/tokuhirom/NoteBeam/pull/11
 - Add release workflow for macOS binaries by @tokuhirom in https://github.com/tokuhirom/NoteBeam/pull/14
