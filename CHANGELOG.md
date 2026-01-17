@@ -1,5 +1,9 @@
 # Changelog
 
+## [v0.0.13](https://github.com/tokuhirom/NoteBeam/compare/v0.0.12...v0.0.13) - 2026-01-17
+- docs: add homebrew cask setup guide by @tokuhirom in https://github.com/tokuhirom/NoteBeam/pull/36
+- feat: switch to universal build for simpler distribution by @tokuhirom in https://github.com/tokuhirom/NoteBeam/pull/38
+
 ## [v0.0.12](https://github.com/tokuhirom/NoteBeam/compare/v0.0.11...v0.0.12) - 2026-01-17
 - feat: add custom app icon for NoteBeam by @tokuhirom in https://github.com/tokuhirom/NoteBeam/pull/34
 
