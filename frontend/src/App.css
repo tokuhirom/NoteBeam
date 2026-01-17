@@ -97,37 +97,53 @@
     white-space: nowrap;
 }
 
-/* TODO Types */
-.todo-item.todo {
-    border-left-color: #4ec9b0;
-}
-
-.todo-item.todo .todo-type {
-    color: #4ec9b0;
-}
-
-.todo-item.deadline {
-    border-left-color: #f14c4c;
-}
-
-.todo-item.deadline .todo-type {
-    color: #f14c4c;
-}
-
-.todo-item.reminder {
+/* TODO Types - neojot style */
+.todo-item.TODO {
     border-left-color: #cca700;
 }
 
-.todo-item.reminder .todo-type {
+.todo-item.TODO .todo-type {
     color: #cca700;
 }
 
-.todo-item.defer {
+.todo-item.DOING {
+    border-left-color: #ff8c00;
+}
+
+.todo-item.DOING .todo-type {
+    color: #ff8c00;
+}
+
+.todo-item.DONE {
+    border-left-color: #4ec9b0;
+}
+
+.todo-item.DONE .todo-type {
+    color: #4ec9b0;
+}
+
+.todo-item.CANCELED {
+    border-left-color: #888;
+}
+
+.todo-item.CANCELED .todo-type {
+    color: #888;
+}
+
+.todo-item.PLAN {
     border-left-color: #6796e6;
 }
 
-.todo-item.defer .todo-type {
+.todo-item.PLAN .todo-type {
     color: #6796e6;
+}
+
+.todo-item.NOTE {
+    border-left-color: #c586c0;
+}
+
+.todo-item.NOTE .todo-type {
+    color: #c586c0;
 }
 
 /* Urgency */

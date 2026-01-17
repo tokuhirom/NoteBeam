@@ -11,11 +11,13 @@ import { history, historyKeymap } from '@codemirror/commands'
 
 // ============ TODO Types and Logic ============
 
-type TodoType = 'reminder' | 'todo' | 'deadline' | 'defer'
+type TodoType = 'TODO' | 'DOING' | 'DONE' | 'CANCELED' | 'PLAN' | 'NOTE'
 
 interface TodoItem {
     type: TodoType
-    date: Date
+    scheduledDate?: Date
+    deadlineDate?: Date
+    finishedDate?: Date
     text: string
     line: number
     position: number
@@ -23,12 +25,25 @@ interface TodoItem {
     rawMatch: string
 }
 
-// Parse howm-style TODO: [YYYY-MM-DD]+ [YYYY-MM-DD]- [YYYY-MM-DD]! [YYYY-MM-DD]~
-// Excludes completed items: [YYYY-MM-DD]. [YYYY-MM-DD]:+ ...
+// Parse parameters like [Scheduled:2026-01-17] or [Deadline:2026-01-17][Finished:2026-01-16]
+function parseParams(paramStr: string): { scheduled?: Date; deadline?: Date; finished?: Date } {
+    const params: { scheduled?: Date; deadline?: Date; finished?: Date } = {}
+    const scheduledMatch = paramStr.match(/Scheduled:(\d{4}-\d{2}-\d{2})/)
+    const deadlineMatch = paramStr.match(/Deadline:(\d{4}-\d{2}-\d{2})/)
+    const finishedMatch = paramStr.match(/Finished:(\d{4}-\d{2}-\d{2})/)
+    if (scheduledMatch) params.scheduled = new Date(scheduledMatch[1])
+    if (deadlineMatch) params.deadline = new Date(deadlineMatch[1])
+    if (finishedMatch) params.finished = new Date(finishedMatch[1])
+    return params
+}
+
+// Parse neojot-style TODO: TYPE[PARAMS]:TEXT
+// Example: TODO[Scheduled:2026-01-17]:牛乳を買う
+// Excludes completed items (DONE, CANCELED)
 function parseTodos(content: string): TodoItem[] {
     const todos: TodoItem[] = []
-    // Match active TODOs but not completed ones (which have ". [date]:" after the first date)
-    const regex = /\[(\d{4}-\d{2}-\d{2})\]([+\-!~])(?!\s*\[)\s*(.+)/g
+    // Match TODO, DOING, PLAN, NOTE (not DONE or CANCELED)
+    const regex = /^(TODO|DOING|PLAN|NOTE)(\[[^\]]*\])+:(.+)$/gm
     let match
     let position = 0
 
@@ -37,23 +52,16 @@ function parseTodos(content: string): TodoItem[] {
         const line = lines[lineNum]
         regex.lastIndex = 0
         while ((match = regex.exec(line)) !== null) {
-            const dateStr = match[1]
-            const typeChar = match[2]
+            const type = match[1] as TodoType
+            const paramsStr = match[2]
             const text = match[3].trim()
-            const date = new Date(dateStr)
-
-            let type: TodoType
-            switch (typeChar) {
-                case '-': type = 'reminder'; break
-                case '+': type = 'todo'; break
-                case '!': type = 'deadline'; break
-                case '~': type = 'defer'; break
-                default: type = 'todo'
-            }
+            const params = parseParams(paramsStr)
 
             todos.push({
                 type,
-                date,
+                scheduledDate: params.scheduled,
+                deadlineDate: params.deadline,
+                finishedDate: params.finished,
                 text,
                 line: lineNum,
                 position: position + match.index,
@@ -67,28 +75,31 @@ function parseTodos(content: string): TodoItem[] {
     return todos
 }
 
-// Calculate priority using howm-style floating/sinking
+// Calculate priority using neojot-style floating/sinking
 function calculatePriority(todo: TodoItem, now: Date): number {
     const msPerDay = 24 * 60 * 60 * 1000
-    const daysDiff = (now.getTime() - todo.date.getTime()) / msPerDay
+
+    // DOING items always float to top
+    if (todo.type === 'DOING') return 3000
+
+    // Use deadline date if available, otherwise scheduled date
+    const targetDate = todo.deadlineDate || todo.scheduledDate
+    if (!targetDate) return 500 // No date: medium priority
+
+    const daysDiff = (now.getTime() - targetDate.getTime()) / msPerDay
 
     switch (todo.type) {
-        case 'reminder':
-            // Sinks after date: priority decreases as days pass
-            if (daysDiff < 0) return 1000 // Future: high priority
-            return Math.max(0, 1000 - daysDiff * 50) // Sinks gradually
-
-        case 'todo':
+        case 'TODO':
             // Floats after date: priority increases as days pass
             if (daysDiff < 0) return 100 // Future: low priority
             return 100 + daysDiff * 100 // Floats up
 
-        case 'deadline':
-            // Floats until date: priority increases as deadline approaches
-            if (daysDiff > 0) return -1000 // Past deadline: sink to bottom (done or overdue)
-            return 2000 + daysDiff * 100 // Approaches: higher priority
+        case 'NOTE':
+            // Sinks after date: priority decreases as days pass
+            if (daysDiff < 0) return 1000 // Future: high priority
+            return Math.max(0, 1000 - daysDiff * 50) // Sinks gradually
 
-        case 'defer':
+        case 'PLAN':
             // Periodic: use sine wave for float/sink cycle (7-day period)
             const cycle = Math.sin((daysDiff / 7) * Math.PI * 2)
             return 500 + cycle * 300
@@ -104,24 +115,9 @@ function sortTodosByPriority(todos: TodoItem[], now: Date): TodoItem[] {
         .sort((a, b) => b.priority - a.priority)
 }
 
-// Get type symbol for display
-function getTypeSymbol(type: TodoType): string {
-    switch (type) {
-        case 'reminder': return '-'
-        case 'todo': return '+'
-        case 'deadline': return '!'
-        case 'defer': return '~'
-    }
-}
-
 // Get type label for display
 function getTypeLabel(type: TodoType): string {
-    switch (type) {
-        case 'reminder': return 'reminder'
-        case 'todo': return 'TODO'
-        case 'deadline': return 'DEADLINE'
-        case 'defer': return 'defer'
-    }
+    return type
 }
 
 // ============ Image Widget ============
@@ -203,8 +199,8 @@ const completedTodoMark = Decoration.mark({ class: 'cm-completed-todo' })
 function buildCompletedTodoDecorations(view: EditorView): DecorationSet {
     const builder = new RangeSetBuilder<Decoration>()
     const doc = view.state.doc.toString()
-    // Match completed TODOs: [YYYY-MM-DD]. [YYYY-MM-DD]:X ...
-    const regex = /\[\d{4}-\d{2}-\d{2}\]\.\s*\[\d{4}-\d{2}-\d{2}\]:[+\-!~]\s*.+/g
+    // Match completed TODOs: DONE[...]:... or CANCELED[...]:...
+    const regex = /^(DONE|CANCELED)(\[[^\]]*\])+:.+$/gm
     let match
 
     while ((match = regex.exec(doc)) !== null) {
@@ -411,7 +407,8 @@ interface TodoPaneProps {
 function TodoPane({ todos, onTodoClick }: TodoPaneProps) {
     const now = new Date()
 
-    const formatDate = (date: Date) => {
+    const formatDate = (date: Date | undefined) => {
+        if (!date) return '-'
         const diff = Math.floor((date.getTime() - now.getTime()) / (24 * 60 * 60 * 1000))
         if (diff === 0) return 'Today'
         if (diff === 1) return 'Tomorrow'
@@ -421,15 +418,21 @@ function TodoPane({ todos, onTodoClick }: TodoPaneProps) {
 
     const getUrgencyClass = (todo: TodoItem) => {
         const msPerDay = 24 * 60 * 60 * 1000
-        const daysDiff = (todo.date.getTime() - now.getTime()) / msPerDay
+        const targetDate = todo.deadlineDate || todo.scheduledDate
+        if (!targetDate) return ''
+        const daysDiff = (targetDate.getTime() - now.getTime()) / msPerDay
 
-        if (todo.type === 'deadline') {
+        if (todo.deadlineDate) {
             if (daysDiff < 0) return 'overdue'
             if (daysDiff < 1) return 'urgent'
             if (daysDiff < 3) return 'soon'
         }
-        if (todo.type === 'todo' && daysDiff < -7) return 'stale'
+        if (todo.type === 'TODO' && daysDiff < -7) return 'stale'
         return ''
+    }
+
+    const getDisplayDate = (todo: TodoItem): Date | undefined => {
+        return todo.deadlineDate || todo.scheduledDate
     }
 
     return (
@@ -445,8 +448,8 @@ function TodoPane({ todos, onTodoClick }: TodoPaneProps) {
                         class={`todo-item ${todo.type} ${getUrgencyClass(todo)}`}
                         onClick={() => onTodoClick(todo)}
                     >
-                        <span class="todo-type">[{getTypeSymbol(todo.type)}]</span>
-                        <span class="todo-date">{formatDate(todo.date)}</span>
+                        <span class="todo-type">{todo.type}</span>
+                        <span class="todo-date">{formatDate(getDisplayDate(todo))}</span>
                         <span class="todo-text">{todo.text}</span>
                     </div>
                 ))}
@@ -456,10 +459,10 @@ function TodoPane({ todos, onTodoClick }: TodoPaneProps) {
             </div>
             <div class="todo-pane-footer">
                 <div class="todo-legend">
-                    <span><code>+</code> todo</span>
-                    <span><code>!</code> deadline</span>
-                    <span><code>-</code> reminder</span>
-                    <span><code>~</code> defer</span>
+                    <span>TODO</span>
+                    <span>DOING</span>
+                    <span>PLAN</span>
+                    <span>NOTE</span>
                 </div>
             </div>
         </div>
@@ -551,8 +554,8 @@ function App() {
                         showDatePicker(view, dateInfo)
                         return true
                     }
-                    // Check if cursor is on a TODO symbol and cycle it
-                    if (cycleTodoSymbol(view)) {
+                    // Check if cursor is on a TODO type and cycle it
+                    if (cycleTodoType(view)) {
                         return true
                     }
                     return false // Let default Enter behavior happen
@@ -703,26 +706,30 @@ function App() {
         }
     }, [datePickerState.visible])
 
-    const isOnTodoDate = (view: EditorView): { start: number; end: number; date: Date } | null => {
+    const isOnTodoDate = (view: EditorView): { start: number; end: number; date: Date; paramType: string } | null => {
         const pos = view.state.selection.main.head
         const doc = view.state.doc.toString()
 
-        // Search around cursor position for [YYYY-MM-DD] pattern
-        const searchStart = Math.max(0, pos - 12)
-        const searchEnd = Math.min(doc.length, pos + 12)
+        // Search around cursor position for Scheduled:YYYY-MM-DD or Deadline:YYYY-MM-DD pattern
+        const searchStart = Math.max(0, pos - 30)
+        const searchEnd = Math.min(doc.length, pos + 15)
         const around = doc.substring(searchStart, searchEnd)
 
-        const regex = /\[(\d{4}-\d{2}-\d{2})\]/g
+        const regex = /(Scheduled|Deadline):(\d{4}-\d{2}-\d{2})/g
         let match
         while ((match = regex.exec(around)) !== null) {
-            const matchStart = searchStart + match.index
-            const matchEnd = matchStart + match[0].length
-            // Check if cursor is inside the date brackets (after [ and before ])
-            if (pos > matchStart && pos < matchEnd) {
+            const paramType = match[1]
+            const dateStr = match[2]
+            const dateStart = searchStart + match.index + paramType.length + 1 // After "Scheduled:" or "Deadline:"
+            const dateEnd = dateStart + dateStr.length
+
+            // Check if cursor is on the date part
+            if (pos >= dateStart && pos <= dateEnd) {
                 return {
-                    start: matchStart + 1,  // After [
-                    end: matchEnd - 1,      // Before ]
-                    date: new Date(match[1])
+                    start: dateStart,
+                    end: dateEnd,
+                    date: new Date(dateStr),
+                    paramType
                 }
             }
         }
@@ -771,67 +778,85 @@ function App() {
     const insertTodo = (view: EditorView) => {
         const now = new Date()
         const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
-        const todoText = `[${dateStr}]+ `
+        const todoText = `TODO[Scheduled:${dateStr}]:`
         const pos = view.state.selection.main.head
 
-        // Insert TODO and position cursor on the '+' symbol
+        // Insert TODO and position cursor at the end (after :)
         view.dispatch({
             changes: { from: pos, insert: todoText },
-            selection: { anchor: pos + dateStr.length + 2 } // Position on '+'
+            selection: { anchor: pos + todoText.length }
         })
     }
 
-    const cycleTodoSymbol = (view: EditorView): boolean => {
+    const cycleTodoType = (view: EditorView): boolean => {
         const pos = view.state.selection.main.head
         const doc = view.state.doc.toString()
+        const line = view.state.doc.lineAt(pos)
+        const lineText = line.text
 
-        // Check if cursor is on a TODO symbol (+, -, !, ~)
-        const char = doc[pos]
-        const symbols = ['+', '!', '-', '~']
-        const currentIndex = symbols.indexOf(char)
+        // Check if cursor is on a TODO type (TODO, DOING, DONE, PLAN, NOTE, CANCELED)
+        const types = ['TODO', 'DOING', 'DONE', 'PLAN', 'NOTE', 'CANCELED']
+        const cycleTypes = ['TODO', 'DOING', 'DONE'] // Main cycle: TODO -> DOING -> DONE -> TODO
 
-        if (currentIndex === -1) return false
+        // Find which type is at the start of the line
+        for (const type of types) {
+            if (lineText.startsWith(type + '[')) {
+                const typeStart = line.from
+                const typeEnd = typeStart + type.length
 
-        // Check if it's part of a TODO pattern [YYYY-MM-DD]X
-        const before = doc.substring(Math.max(0, pos - 12), pos)
-        if (!/\[\d{4}-\d{2}-\d{2}\]$/.test(before)) return false
-
-        // Cycle to next symbol
-        const nextSymbol = symbols[(currentIndex + 1) % symbols.length]
-        view.dispatch({
-            changes: { from: pos, to: pos + 1, insert: nextSymbol },
-            selection: { anchor: pos }
-        })
-        return true
+                // Check if cursor is on the type
+                if (pos >= typeStart && pos <= typeEnd) {
+                    const currentIndex = cycleTypes.indexOf(type)
+                    if (currentIndex !== -1) {
+                        // Cycle to next type
+                        const nextType = cycleTypes[(currentIndex + 1) % cycleTypes.length]
+                        view.dispatch({
+                            changes: { from: typeStart, to: typeEnd, insert: nextType },
+                            selection: { anchor: typeStart + nextType.length }
+                        })
+                        return true
+                    }
+                }
+            }
+        }
+        return false
     }
 
     const completeTodo = (view: EditorView): boolean => {
         const pos = view.state.selection.main.head
-        const doc = view.state.doc.toString()
+        const line = view.state.doc.lineAt(pos)
+        const lineText = line.text
 
-        // Check if cursor is on a TODO symbol (+, -, !, ~)
-        const char = doc[pos]
-        const symbols = ['+', '!', '-', '~']
-        if (!symbols.includes(char)) return false
+        // Check if line starts with TODO, DOING, PLAN, or NOTE
+        const completableTypes = ['TODO', 'DOING', 'PLAN', 'NOTE']
+        for (const type of completableTypes) {
+            if (lineText.startsWith(type + '[')) {
+                const typeStart = line.from
+                const typeEnd = typeStart + type.length
 
-        // Check if it's part of a TODO pattern [YYYY-MM-DD]X
-        const beforeMatch = doc.substring(Math.max(0, pos - 12), pos)
-        const dateMatch = beforeMatch.match(/\[(\d{4}-\d{2}-\d{2})\]$/)
-        if (!dateMatch) return false
+                // Check if cursor is on the type
+                if (pos >= typeStart && pos <= typeEnd) {
+                    // Get today's date for completion timestamp
+                    const now = new Date()
+                    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
 
-        // Get today's date for completion timestamp
-        const now = new Date()
-        const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+                    // Find the position after the type's parameters
+                    // TODO[Scheduled:2026-01-17]: -> DONE[Finished:2026-01-17][Scheduled:2026-01-17]:
+                    const bracketEnd = lineText.indexOf(']:')
+                    if (bracketEnd === -1) return false
 
-        // Transform: [2026-01-17]+ task → [2026-01-17]. [2026-01-17]:+ task
-        // The symbol at pos becomes "." and we insert completion date + original symbol
-        const completionInsert = `. [${todayStr}]:${char}`
+                    const existingParams = lineText.substring(type.length, bracketEnd + 1)
+                    const newText = `DONE[Finished:${todayStr}]${existingParams}`
 
-        view.dispatch({
-            changes: { from: pos, to: pos + 1, insert: completionInsert },
-            selection: { anchor: pos } // Stay on the "."
-        })
-        return true
+                    view.dispatch({
+                        changes: { from: typeStart, to: typeStart + bracketEnd + 1, insert: newText },
+                        selection: { anchor: typeStart }
+                    })
+                    return true
+                }
+            }
+        }
+        return false
     }
 
     const addNewEntry = (view: EditorView) => {
