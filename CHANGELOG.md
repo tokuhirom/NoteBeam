@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.0.10](https://github.com/tokuhirom/NoteBeam/compare/v0.0.9...v0.0.10) - 2026-01-17
+- fix: preserve arm64 zip during amd64 build by @tokuhirom in https://github.com/tokuhirom/NoteBeam/pull/30
+
 ## [v0.0.9](https://github.com/tokuhirom/NoteBeam/compare/v0.0.8...v0.0.9) - 2026-01-17
 - ci: add actionlint to CI workflow by @tokuhirom in https://github.com/tokuhirom/NoteBeam/pull/28
 
