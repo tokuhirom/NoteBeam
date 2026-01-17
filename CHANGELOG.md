@@ -1,5 +1,10 @@
 # Changelog
 
+## [v0.0.14](https://github.com/tokuhirom/NoteBeam/compare/v0.0.13...v0.0.14) - 2026-01-17
+- fix: place cursor on empty line after time header in Cmd-N by @tokuhirom in https://github.com/tokuhirom/NoteBeam/pull/39
+- feat: add backup strategy with .bak and daily backups by @tokuhirom in https://github.com/tokuhirom/NoteBeam/pull/42
+- fix: show error dialog when file loading fails by @tokuhirom in https://github.com/tokuhirom/NoteBeam/pull/40
+
 ## [v0.0.13](https://github.com/tokuhirom/NoteBeam/compare/v0.0.12...v0.0.13) - 2026-01-17
 - docs: add homebrew cask setup guide by @tokuhirom in https://github.com/tokuhirom/NoteBeam/pull/36
 - feat: switch to universal build for simpler distribution by @tokuhirom in https://github.com/tokuhirom/NoteBeam/pull/38
