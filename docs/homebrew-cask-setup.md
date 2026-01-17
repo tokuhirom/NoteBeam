@@ -6,18 +6,16 @@
 
 - GitHub に `homebrew-tap` リポジトリを作成済み
 - アプリは `.app` バンドルとして zip で配布
-- arm64 と amd64 の両アーキテクチャをサポート
+- universal binary（arm64 + amd64）でビルド
 
 ## 1. Cask ファイルの構造
 
 ```ruby
 cask "appname" do
-  arch arm: "arm64", intel: "amd64"
-
   version "1.0.0"
-  sha256 arm: "ARM64のSHA256ハッシュ", intel: "AMD64のSHA256ハッシュ"
+  sha256 "SHA256ハッシュ"
 
-  url "https://github.com/USER/REPO/releases/download/v#{version}/AppName_v#{version}_darwin_#{arch}.zip"
+  url "https://github.com/USER/REPO/releases/download/v#{version}/AppName_v#{version}_darwin_universal.zip"
   name "AppName"
   desc "アプリの説明"
   homepage "https://github.com/USER/REPO"
@@ -78,69 +76,39 @@ jobs:
         run: npm ci
         working-directory: frontend
 
-      # arm64 ビルド
-      - name: Build for macOS (arm64)
-        run: wails build -platform darwin/arm64
+      - name: Build for macOS (universal)
+        run: wails build -platform darwin/universal
 
-      - name: Create zip (arm64)
+      - name: Create zip
         run: |
           cd build/bin
-          zip -r AppName_${{ github.ref_name }}_darwin_arm64.zip AppName.app
-          # amd64 ビルド前に退避（rm -rf build/bin で消えないように）
-          mv AppName_${{ github.ref_name }}_darwin_arm64.zip /tmp/
+          zip -r AppName_${{ github.ref_name }}_darwin_universal.zip AppName.app
 
-      # amd64 ビルド
-      - name: Build for macOS (amd64)
+      - name: Calculate checksum
+        id: checksum
         run: |
-          rm -rf build/bin
-          wails build -platform darwin/amd64
+          SHA256=$(shasum -a 256 build/bin/AppName_${{ github.ref_name }}_darwin_universal.zip | awk '{print $1}')
 
-      - name: Create zip (amd64)
-        run: |
-          cd build/bin
-          zip -r AppName_${{ github.ref_name }}_darwin_amd64.zip AppName.app
-          # arm64 の zip を戻す
-          mv /tmp/AppName_${{ github.ref_name }}_darwin_arm64.zip .
-
-      # チェックサム計算
-      - name: Calculate checksums
-        id: checksums
-        run: |
-          ARM64_SHA256=$(shasum -a 256 build/bin/AppName_${{ github.ref_name }}_darwin_arm64.zip | awk '{print $1}')
-          AMD64_SHA256=$(shasum -a 256 build/bin/AppName_${{ github.ref_name }}_darwin_amd64.zip | awk '{print $1}')
-
-          # バリデーション
-          if [ -z "$ARM64_SHA256" ]; then
-            echo "ERROR: Failed to calculate ARM64 checksum"
-            exit 1
-          fi
-          if [ -z "$AMD64_SHA256" ]; then
-            echo "ERROR: Failed to calculate AMD64 checksum"
+          if [ -z "$SHA256" ]; then
+            echo "ERROR: Failed to calculate checksum"
             exit 1
           fi
 
-          echo "arm64_sha256=$ARM64_SHA256" >> $GITHUB_OUTPUT
-          echo "amd64_sha256=$AMD64_SHA256" >> $GITHUB_OUTPUT
+          echo "sha256=$SHA256" >> $GITHUB_OUTPUT
           VERSION="${{ github.ref_name }}"
           echo "version=${VERSION#v}" >> $GITHUB_OUTPUT
 
-      # GitHub Release にアップロード
       - name: Upload to Release
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            build/bin/AppName_${{ github.ref_name }}_darwin_arm64.zip
-            build/bin/AppName_${{ github.ref_name }}_darwin_amd64.zip
+          files: build/bin/AppName_${{ github.ref_name }}_darwin_universal.zip
 
-      # Homebrew Cask を更新
       - name: Update Homebrew Cask
         env:
           TAP_GITHUB_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN }}
-          VERSION: ${{ steps.checksums.outputs.version }}
-          ARM64_SHA256: ${{ steps.checksums.outputs.arm64_sha256 }}
-          AMD64_SHA256: ${{ steps.checksums.outputs.amd64_sha256 }}
+          VERSION: ${{ steps.checksum.outputs.version }}
+          SHA256: ${{ steps.checksum.outputs.sha256 }}
         run: |
-          # バリデーション
           if [ -z "$TAP_GITHUB_TOKEN" ]; then
             echo "ERROR: TAP_GITHUB_TOKEN is not set"
             exit 1
@@ -153,12 +121,10 @@ jobs:
           # printf を使用（heredoc は YAML 構文エラーになる可能性あり）
           printf '%s\n' \
             'cask "appname" do' \
-            '  arch arm: "arm64", intel: "amd64"' \
-            '' \
             "  version \"${VERSION}\"" \
-            "  sha256 arm: \"${ARM64_SHA256}\", intel: \"${AMD64_SHA256}\"" \
+            "  sha256 \"${SHA256}\"" \
             '' \
-            '  url "https://github.com/USER/REPO/releases/download/v#{version}/AppName_v#{version}_darwin_#{arch}.zip"' \
+            '  url "https://github.com/USER/REPO/releases/download/v#{version}/AppName_v#{version}_darwin_universal.zip"' \
             '  name "AppName"' \
             '  desc "アプリの説明"' \
             '  homepage "https://github.com/USER/REPO"' \
@@ -189,13 +155,13 @@ brew install USER/tap/appname
 
 ## 注意事項
 
+### universal binary を使う理由
+
+`wails build -platform darwin/universal` で arm64 と amd64 の両方に対応した universal binary を作成できる。1つの zip で両アーキテクチャに対応でき、Cask もシンプルになる。
+
 ### heredoc を使わない理由
 
 GitHub Actions の YAML で heredoc を使うと、内容が YAML として解釈されてシンタックスエラーになる場合がある。`printf` を使うのが安全。
-
-### arm64 zip の退避
-
-arm64 ビルド後に amd64 をビルドする際、`rm -rf build/bin` で arm64 の zip も消えてしまう。一時的に `/tmp/` に退避してから戻す。
 
 ### 署名されていないアプリ
 
