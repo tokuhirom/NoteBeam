@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.0.12](https://github.com/tokuhirom/NoteBeam/compare/v0.0.11...v0.0.12) - 2026-01-17
+- feat: add custom app icon for NoteBeam by @tokuhirom in https://github.com/tokuhirom/NoteBeam/pull/34
+
 ## [v0.0.11](https://github.com/tokuhirom/NoteBeam/compare/v0.0.10...v0.0.11) - 2026-01-17
 - feat: add postflight to remove quarantine attribute by @tokuhirom in https://github.com/tokuhirom/NoteBeam/pull/32
 
