@@ -125,6 +125,12 @@ jobs:
             '' \
             '  app "NoteBeam.app"' \
             '' \
+            '  postflight do' \
+            '    system_command "/usr/bin/xattr",' \
+            '                   args: ["-cr", "#{appdir}/NoteBeam.app"],' \
+            '                   sudo: true' \
+            '  end' \
+            '' \
             '  zap trash: "~/Documents/NoteBeam"' \
             'end' > Casks/notebeam.rb
 
