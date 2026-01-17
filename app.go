@@ -37,12 +37,16 @@ func (a *App) startup(ctx context.Context) {
 }
 
 // LoadNote loads the note content from file
-func (a *App) LoadNote() string {
+func (a *App) LoadNote() (string, error) {
 	data, err := os.ReadFile(a.notePath)
 	if err != nil {
-		return ""
+		if os.IsNotExist(err) {
+			// File doesn't exist yet, return empty string (not an error)
+			return "", nil
+		}
+		return "", fmt.Errorf("failed to load note: %w", err)
 	}
-	return string(data)
+	return string(data), nil
 }
 
 // SaveNote saves the note content to file

@@ -506,11 +506,16 @@ function App() {
 
     // Load note on mount
     useEffect(() => {
-        LoadNote().then((note: string) => {
-            setContent(note)
-            setLastSavedContent(note)
-            setIsLoaded(true)
-        })
+        LoadNote()
+            .then((note: string) => {
+                setContent(note)
+                setLastSavedContent(note)
+                setIsLoaded(true)
+            })
+            .catch((err: Error) => {
+                alert(`ファイルの読み込みに失敗しました:\n${err.message}\n\nDocuments フォルダへのアクセス権限を確認してください。`)
+                setIsLoaded(true)
+            })
     }, [])
 
     // Initialize CodeMirror
