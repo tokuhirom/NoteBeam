@@ -1,5 +1,9 @@
 # Changelog
 
+## [v0.0.8](https://github.com/tokuhirom/NoteBeam/compare/v0.0.7...v0.0.8) - 2026-01-17
+- fix: improve Cmd-N cursor position by @tokuhirom in https://github.com/tokuhirom/NoteBeam/pull/25
+- fix: use printf instead of heredoc in release workflow by @tokuhirom in https://github.com/tokuhirom/NoteBeam/pull/27
+
 ## [v0.0.7](https://github.com/tokuhirom/NoteBeam/compare/v0.0.6...v0.0.7) - 2026-01-17
 - fix: validate checksums and env vars before updating Cask by @tokuhirom in https://github.com/tokuhirom/NoteBeam/pull/23
 
