@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.0.11](https://github.com/tokuhirom/NoteBeam/compare/v0.0.10...v0.0.11) - 2026-01-17
+- feat: add postflight to remove quarantine attribute by @tokuhirom in https://github.com/tokuhirom/NoteBeam/pull/32
+
 ## [v0.0.10](https://github.com/tokuhirom/NoteBeam/compare/v0.0.9...v0.0.10) - 2026-01-17
 - fix: preserve arm64 zip during amd64 build by @tokuhirom in https://github.com/tokuhirom/NoteBeam/pull/30
 
