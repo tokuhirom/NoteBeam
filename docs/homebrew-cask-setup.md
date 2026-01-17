@@ -201,10 +201,6 @@ arm64 ビルド後に amd64 をビルドする際、`rm -rf build/bin` で arm64
 
 署名・notarize されていないアプリは macOS の Gatekeeper でブロックされる。`postflight` で `xattr -cr` を実行して quarantine 属性を削除する。ユーザーは sudo パスワードの入力が必要。
 
-### Homebrew の将来
-
-Homebrew は 2026年9月に署名されていないアプリのサポートを終了予定。長期的にはコード署名と notarization を検討すべき。
-
 ## 参考リンク
 
 - [Homebrew Cask Cookbook](https://docs.brew.sh/Cask-Cookbook)
