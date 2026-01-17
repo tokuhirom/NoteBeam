@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.0.16](https://github.com/tokuhirom/NoteBeam/compare/v0.0.15...v0.0.16) - 2026-01-17
+- feat: Cmd-T cycles TODO type when cursor is on TYPE by @tokuhirom in https://github.com/tokuhirom/NoteBeam/pull/45
+
 ## [v0.0.15](https://github.com/tokuhirom/NoteBeam/compare/v0.0.14...v0.0.15) - 2026-01-17
 - feat: use OS-specific application data directory by @tokuhirom in https://github.com/tokuhirom/NoteBeam/pull/43
 
