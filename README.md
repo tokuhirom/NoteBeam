@@ -30,6 +30,20 @@ NoteBeam はお手軽に使えるメモアプリです。Mac 用です。
 - **シンタックスハイライト**: Markdown の見出し、コードブロック内の各言語をハイライト表示
 - **画像ペースト**: Cmd-V で画像をペーストすると `images/YYYYMMDDHHMMSS.png` に保存され、インラインプレビュー表示
 
+## Installation
+
+### Releases からインストール
+
+1. [Releases ページ](https://github.com/tokuhirom/NoteBeam/releases)から最新版をダウンロード
+2. ダウンロードした zip ファイルを解凍
+3. `NoteBeam.app` をアプリケーションフォルダにドラッグ&ドロップ
+4. 初回起動時に「開発元を確認できないため開けません」と表示される場合:
+   - アプリを右クリック（または Control + クリック）して「開く」を選択
+   - 表示されるダイアログで「開く」をクリック
+   - または、システム設定 > プライバシーとセキュリティ から「このまま開く」を選択
+
+**注意**: このアプリは署名されていないため、初回起動時に macOS の Gatekeeper による警告が表示されます。
+
 ## TODO 管理（howm 方式）
 
 [howm](https://kaorahi.github.io/howm/) にインスパイアされた浮沈式 TODO 管理機能。
