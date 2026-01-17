@@ -109,23 +109,22 @@ jobs:
           cd homebrew-tap
 
           mkdir -p Casks
-          cat > Casks/notebeam.rb <<EOF
-cask "notebeam" do
-  arch arm: "arm64", intel: "amd64"
-
-  version "${VERSION}"
-  sha256 arm: "${ARM64_SHA256}", intel: "${AMD64_SHA256}"
-
-  url "https://github.com/tokuhirom/NoteBeam/releases/download/v#{version}/NoteBeam_v#{version}_darwin_#{arch}.zip"
-  name "NoteBeam"
-  desc "Simple memo app for Mac"
-  homepage "https://github.com/tokuhirom/NoteBeam"
-
-  app "NoteBeam.app"
-
-  zap trash: "~/Documents/NoteBeam"
-end
-EOF
+          printf '%s\n' \
+            'cask "notebeam" do' \
+            '  arch arm: "arm64", intel: "amd64"' \
+            '' \
+            "  version \"${VERSION}\"" \
+            "  sha256 arm: \"${ARM64_SHA256}\", intel: \"${AMD64_SHA256}\"" \
+            '' \
+            '  url "https://github.com/tokuhirom/NoteBeam/releases/download/v#{version}/NoteBeam_v#{version}_darwin_#{arch}.zip"' \
+            '  name "NoteBeam"' \
+            '  desc "Simple memo app for Mac"' \
+            '  homepage "https://github.com/tokuhirom/NoteBeam"' \
+            '' \
+            '  app "NoteBeam.app"' \
+            '' \
+            '  zap trash: "~/Documents/NoteBeam"' \
+            'end' > Casks/notebeam.rb
 
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
