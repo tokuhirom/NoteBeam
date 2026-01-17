@@ -946,8 +946,10 @@ function App() {
             } else {
                 const beforeNext = currentContent.substring(0, nextDateIndex).trimEnd()
                 const afterNext = currentContent.substring(nextDateIndex)
-                newContent = beforeNext + '\n\n' + timeHeader + '\n\n' + afterNext
-                cursorPosition = beforeNext.length + timeHeader.length + 4
+                // timeHeader の後に空行2つ + 次の日付ヘッダーとの間にもう1行
+                newContent = beforeNext + '\n\n' + timeHeader + '\n\n\n' + afterNext
+                // カーソルは timeHeader の次の行（最初の空行）に配置
+                cursorPosition = beforeNext.length + 2 + timeHeader.length + 1
             }
         } else {
             newContent = dateHeader + '\n\n' + timeHeader + '\n\n' + currentContent
