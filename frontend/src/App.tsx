@@ -778,10 +778,10 @@ function App() {
     const insertTodo = (view: EditorView) => {
         const now = new Date()
         const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
-        const todoText = `TODO[Scheduled:${dateStr}]:`
+        const todoText = `TODO[Scheduled:${dateStr}]: `
         const pos = view.state.selection.main.head
 
-        // Insert TODO and position cursor at the end (after :)
+        // Insert TODO and position cursor at the end (after space)
         view.dispatch({
             changes: { from: pos, insert: todoText },
             selection: { anchor: pos + todoText.length }
