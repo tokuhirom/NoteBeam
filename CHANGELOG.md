@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.0.21](https://github.com/tokuhirom/NoteBeam/compare/v0.0.20...v0.0.21) - 2026-01-18
+- fix: add webkit2_41 build tag for Linux builds by @tokuhirom in https://github.com/tokuhirom/NoteBeam/pull/59
+
 ## [v0.0.20](https://github.com/tokuhirom/NoteBeam/compare/v0.0.19...v0.0.20) - 2026-01-18
 - docs: update keyboard shortcuts for cross-platform support by @tokuhirom in https://github.com/tokuhirom/NoteBeam/pull/55
 - fix: update webkit2gtk package for Ubuntu 24.04 by @tokuhirom in https://github.com/tokuhirom/NoteBeam/pull/57
