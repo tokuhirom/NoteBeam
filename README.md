@@ -28,13 +28,21 @@ NoteBeam はお手軽に使えるメモアプリです。macOS、Windows、Linux
 
 ## Features
 
-- **Cmd-N**: 新しいエントリを追加。今日の日付がなければ先頭に日付ヘッダーを追加、あれば今日のセクションに時刻エントリを追加
-- **Cmd-F**: 検索機能
-- **Cmd-T**: TODO を挿入
-- **Cmd-Shift-T**: TODO ペインの表示/非表示
+### キーボードショートカット
+
+| 機能 | macOS | Windows/Linux |
+|------|-------|---------------|
+| 新しいエントリを追加 | Cmd-N | Ctrl-N |
+| 検索 | Cmd-F | Ctrl-F |
+| TODO を挿入 | Cmd-T | Ctrl-T |
+| TODO ペインの表示/非表示 | Cmd-Shift-T | Ctrl-Shift-T |
+| 画像をペースト | Cmd-V | Ctrl-V |
+
+### その他の機能
+
 - **自動保存**: 1秒ごとに自動保存
 - **シンタックスハイライト**: Markdown の見出し、コードブロック内の各言語をハイライト表示
-- **画像ペースト**: Cmd-V で画像をペーストすると `images/YYYYMMDDHHMMSS.png` に保存され、インラインプレビュー表示
+- **画像ペースト**: 画像をペーストすると `images/YYYYMMDDHHMMSS.png` に保存され、インラインプレビュー表示
 
 ## Installation
 
@@ -134,15 +142,18 @@ CANCELED[Scheduled:2026-01-17]:キャンセルしたタスク
 
 ### 操作
 
+| 動作 | macOS | Windows/Linux |
+|------|-------|---------------|
+| TODO を挿入、または TYPE 上ならサイクル: `TODO` → `DOING` → `DONE` | Cmd-T | Ctrl-T |
+| TODO ペインを表示/非表示 | Cmd-Shift-T | Ctrl-Shift-T |
+
 | キー | 動作 |
 |------|------|
-| **Cmd-T** | TODO を挿入、または TYPE 上ならサイクル: `TODO` → `DOING` → `DONE` |
 | **Enter** | 日付上で押すとカレンダーピッカーを表示 |
 | **`.`** | TYPE上で押すと完了（DONE）に変換 |
 | **`c`** | TYPE上で押すと CANCELED に変換 |
 | **`n`** | TYPE上で押すと NOTE に変換 |
 | **`p`** | TYPE上で押すと PLAN に変換 |
-| **Cmd-Shift-T** | TODO ペインを表示/非表示 |
 
 ### 日付変更（カレンダーピッカー）
 
