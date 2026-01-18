@@ -4,6 +4,7 @@ package main
 
 import (
 	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"syscall"
@@ -42,14 +43,23 @@ func (l *InstanceLock) Acquire() error {
 	// Try to acquire exclusive lock (non-blocking)
 	err = syscall.Flock(int(f.Fd()), syscall.LOCK_EX|syscall.LOCK_NB)
 	if err != nil {
-		f.Close()
+		_ = f.Close() // Ignore error on cleanup path
 		return fmt.Errorf("another instance of NoteBeam is already running")
 	}
 
 	// Write PID to lock file for debugging
-	f.Truncate(0)
-	f.Seek(0, 0)
-	fmt.Fprintf(f, "%d\n", os.Getpid())
+	if err := f.Truncate(0); err != nil {
+		_ = f.Close()
+		return fmt.Errorf("failed to truncate lock file: %w", err)
+	}
+	if _, err := f.Seek(0, 0); err != nil {
+		_ = f.Close()
+		return fmt.Errorf("failed to seek lock file: %w", err)
+	}
+	if _, err := fmt.Fprintf(f, "%d\n", os.Getpid()); err != nil {
+		_ = f.Close()
+		return fmt.Errorf("failed to write PID to lock file: %w", err)
+	}
 
 	l.lockFile = f
 	return nil
@@ -58,9 +68,15 @@ func (l *InstanceLock) Acquire() error {
 // Release releases the lock
 func (l *InstanceLock) Release() {
 	if l.lockFile != nil {
-		syscall.Flock(int(l.lockFile.Fd()), syscall.LOCK_UN)
-		l.lockFile.Close()
-		os.Remove(l.lockPath)
+		if err := syscall.Flock(int(l.lockFile.Fd()), syscall.LOCK_UN); err != nil {
+			slog.Warn("failed to unlock file", "error", err)
+		}
+		if err := l.lockFile.Close(); err != nil {
+			slog.Warn("failed to close lock file", "error", err)
+		}
+		if err := os.Remove(l.lockPath); err != nil {
+			slog.Warn("failed to remove lock file", "error", err)
+		}
 		l.lockFile = nil
 	}
 }

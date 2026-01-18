@@ -54,7 +54,9 @@ func showErrorDialog(title, message string) {
 	case "darwin":
 		// Use osascript for macOS
 		script := `display dialog "` + message + `" with title "` + title + `" buttons {"OK"} default button "OK" with icon stop`
-		exec.Command("osascript", "-e", script).Run()
+		if err := exec.Command("osascript", "-e", script).Run(); err != nil {
+			slog.Warn("failed to show error dialog", "error", err)
+		}
 	default:
 		// For other platforms, just print to stderr
 		println("Error:", title, "-", message)
