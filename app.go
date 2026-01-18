@@ -17,7 +17,8 @@ const backupRetentionDays = 7
 type App struct {
 	ctx               context.Context
 	notePath          string
-	lastDailyBackup   string // Track the date of last daily backup (YYYY-MM-DD)
+	lastDailyBackup   string    // Track the date of last daily backup (YYYY-MM-DD)
+	lastModTime       time.Time // Track file modification time for optimistic locking
 }
 
 // getDataDir returns the OS-specific application data directory
@@ -66,26 +67,84 @@ func (a *App) startup(ctx context.Context) {
 
 // LoadNote loads the note content from file
 func (a *App) LoadNote() (string, error) {
-	data, err := os.ReadFile(a.notePath)
+	info, err := os.Stat(a.notePath)
 	if err != nil {
 		if os.IsNotExist(err) {
 			// File doesn't exist yet, return empty string (not an error)
+			a.lastModTime = time.Time{}
 			return "", nil
 		}
+		return "", fmt.Errorf("failed to stat note: %w", err)
+	}
+
+	data, err := os.ReadFile(a.notePath)
+	if err != nil {
 		return "", fmt.Errorf("failed to load note: %w", err)
 	}
+
+	// Track modification time for optimistic locking
+	a.lastModTime = info.ModTime()
 	return string(data), nil
 }
 
+// SaveResult represents the result of a save operation
+type SaveResult struct {
+	Success      bool   `json:"success"`
+	ConflictFile string `json:"conflictFile,omitempty"` // Path to conflict file if any
+	Error        string `json:"error,omitempty"`
+}
+
 // SaveNote saves the note content to file with backup
-func (a *App) SaveNote(content string) error {
+// Uses optimistic locking: if file was modified externally, saves to a conflict file
+func (a *App) SaveNote(content string) SaveResult {
+	// Check for external modification (optimistic locking)
+	if !a.lastModTime.IsZero() {
+		info, err := os.Stat(a.notePath)
+		if err == nil && info.ModTime().After(a.lastModTime) {
+			// File was modified externally - save to conflict file
+			conflictPath := a.saveConflictFile(content)
+			return SaveResult{
+				Success:      false,
+				ConflictFile: conflictPath,
+				Error:        "File was modified externally. Your changes were saved to: " + filepath.Base(conflictPath),
+			}
+		}
+	}
+
 	// Create backup before saving
 	if err := a.createBackup(); err != nil {
 		slog.Warn("failed to create backup", "error", err)
 		// Continue saving even if backup fails
 	}
 
-	return os.WriteFile(a.notePath, []byte(content), 0644)
+	if err := os.WriteFile(a.notePath, []byte(content), 0644); err != nil {
+		return SaveResult{
+			Success: false,
+			Error:   fmt.Sprintf("failed to save: %v", err),
+		}
+	}
+
+	// Update modification time after successful save
+	if info, err := os.Stat(a.notePath); err == nil {
+		a.lastModTime = info.ModTime()
+	}
+
+	return SaveResult{Success: true}
+}
+
+// saveConflictFile saves content to a timestamped conflict file
+func (a *App) saveConflictFile(content string) string {
+	timestamp := time.Now().Format("20060102150405")
+	dir := filepath.Dir(a.notePath)
+	conflictPath := filepath.Join(dir, fmt.Sprintf("index.conflict.%s.md", timestamp))
+
+	if err := os.WriteFile(conflictPath, []byte(content), 0644); err != nil {
+		slog.Error("failed to save conflict file", "path", conflictPath, "error", err)
+		return ""
+	}
+
+	slog.Warn("saved conflict file due to external modification", "path", conflictPath)
+	return conflictPath
 }
 
 // createBackup creates .bak file and daily backup

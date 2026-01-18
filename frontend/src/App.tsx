@@ -485,11 +485,19 @@ interface DatePickerState {
     dateInfo: { start: number; end: number; date: Date } | null
 }
 
+// SaveResult type from Go backend
+interface SaveResult {
+    success: boolean
+    conflictFile?: string
+    error?: string
+}
+
 function App() {
     const [content, setContent] = useState('')
     const [lastSavedContent, setLastSavedContent] = useState('')
     const [isLoaded, setIsLoaded] = useState(false)
     const [showTodoPane, setShowTodoPane] = useState(false)
+    const [conflictWarning, setConflictWarning] = useState<string | null>(null)
     const [datePickerState, setDatePickerState] = useState<DatePickerState>({
         visible: false,
         position: { x: 0, y: 0 },
@@ -720,8 +728,14 @@ function App() {
     useEffect(() => {
         const interval = setInterval(() => {
             if (content !== lastSavedContent) {
-                SaveNote(content).then(() => {
-                    setLastSavedContent(content)
+                SaveNote(content).then((result: SaveResult) => {
+                    if (result.success) {
+                        setLastSavedContent(content)
+                    } else if (result.conflictFile) {
+                        // File was modified externally - show warning
+                        setConflictWarning(result.error || 'File conflict detected')
+                        // Don't update lastSavedContent to prevent further saves
+                    }
                 })
             }
         }, 1000)
@@ -987,6 +1001,13 @@ function App() {
 
     return (
         <div id="App" class={showTodoPane ? 'with-todo-pane' : ''}>
+            {conflictWarning && (
+                <div class="conflict-warning">
+                    <span class="conflict-icon">⚠️</span>
+                    <span class="conflict-message">{conflictWarning}</span>
+                    <button class="conflict-dismiss" onClick={() => setConflictWarning(null)}>×</button>
+                </div>
+            )}
             {showTodoPane && (
                 <TodoPane todos={sortedTodos} onTodoClick={handleTodoClick} />
             )}
