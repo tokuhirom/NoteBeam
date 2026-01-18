@@ -50,9 +50,9 @@ jobs:
           fi
 
           echo "SHA256: $SHA256"
-          echo "sha256=$SHA256" >> $GITHUB_OUTPUT
+          echo "sha256=${SHA256}" >> "$GITHUB_OUTPUT"
           VERSION="${{ github.ref_name }}"
-          echo "version=${VERSION#v}" >> $GITHUB_OUTPUT
+          echo "version=${VERSION#v}" >> "$GITHUB_OUTPUT"
 
       - name: Upload to Release
         uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2.5.0
@@ -78,7 +78,7 @@ jobs:
             exit 1
           fi
 
-          git clone https://x-access-token:${TAP_GITHUB_TOKEN}@github.com/tokuhirom/homebrew-tap.git
+          git clone "https://x-access-token:${TAP_GITHUB_TOKEN}@github.com/tokuhirom/homebrew-tap.git"
           cd homebrew-tap
 
           mkdir -p Casks
