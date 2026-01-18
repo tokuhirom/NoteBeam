@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.0.18](https://github.com/tokuhirom/NoteBeam/compare/v0.0.17...v0.0.18) - 2026-01-18
+- feat: prevent multiple instances from running by @tokuhirom in https://github.com/tokuhirom/NoteBeam/pull/47
+
 ## [v0.0.17](https://github.com/tokuhirom/NoteBeam/compare/v0.0.16...v0.0.17) - 2026-01-18
 - feat: add optimistic locking to prevent data loss by @tokuhirom in https://github.com/tokuhirom/NoteBeam/pull/48
 
