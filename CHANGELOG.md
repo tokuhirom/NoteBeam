@@ -3,6 +3,9 @@
 ## [v0.0.19](https://github.com/tokuhirom/NoteBeam/compare/v0.0.18...v0.0.19) - 2026-01-18
 - feat: add Windows and Linux platform support by @tokuhirom in https://github.com/tokuhirom/NoteBeam/pull/52
 
+## [v0.0.19](https://github.com/tokuhirom/NoteBeam/compare/v0.0.18...v0.0.19) - 2026-01-18
+- feat: add Windows and Linux platform support by @tokuhirom in https://github.com/tokuhirom/NoteBeam/pull/52
+
 ## [v0.0.18](https://github.com/tokuhirom/NoteBeam/compare/v0.0.17...v0.0.18) - 2026-01-18
 - feat: prevent multiple instances from running by @tokuhirom in https://github.com/tokuhirom/NoteBeam/pull/47
 
