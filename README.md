@@ -1,6 +1,6 @@
 # NoteBeam
 
-NoteBeam はお手軽に使えるメモアプリです。Mac 用です。
+NoteBeam はお手軽に使えるメモアプリです。macOS、Windows、Linux に対応しています。
 
 基本的には1ファイルだけのメモアプリ。フォーマットは以下のような形。
 
@@ -38,7 +38,9 @@ NoteBeam はお手軽に使えるメモアプリです。Mac 用です。
 
 ## Installation
 
-### Homebrew でインストール（推奨）
+### macOS
+
+#### Homebrew でインストール（推奨）
 
 ```bash
 brew install tokuhirom/tap/notebeam
@@ -49,15 +51,15 @@ brew install tokuhirom/tap/notebeam
 xattr -cr /Applications/NoteBeam.app
 ```
 
-### Releases からインストール
+#### Releases からインストール
 
-1. [Releases ページ](https://github.com/tokuhirom/NoteBeam/releases)から最新版をダウンロード
+1. [Releases ページ](https://github.com/tokuhirom/NoteBeam/releases)から `NoteBeam_*_darwin_universal.zip` をダウンロード
 2. ダウンロードした zip ファイルを解凍
 3. `NoteBeam.app` をアプリケーションフォルダにドラッグ&ドロップ
 
 **注意**: このアプリは署名されていないため、以下のいずれかの方法で起動してください。
 
-#### 方法1: xattr コマンドを使用（推奨）
+**方法1: xattr コマンドを使用（推奨）**
 
 ターミナルで以下のコマンドを実行:
 ```bash
@@ -66,11 +68,34 @@ xattr -cr /Applications/NoteBeam.app
 
 その後、通常通りアプリを起動できます。
 
-#### 方法2: 右クリックから起動
+**方法2: 右クリックから起動**
 
 - アプリを右クリック（または Control + クリック）して「開く」を選択
 - 表示されるダイアログで「開く」をクリック
 - または、システム設定 > プライバシーとセキュリティ から「このまま開く」を選択
+
+### Windows
+
+1. [Releases ページ](https://github.com/tokuhirom/NoteBeam/releases)から `NoteBeam_*_windows_amd64.zip` をダウンロード
+2. ダウンロードした zip ファイルを解凍
+3. `NoteBeam.exe` を実行
+
+### Linux
+
+1. [Releases ページ](https://github.com/tokuhirom/NoteBeam/releases)から `NoteBeam_*_linux_amd64.tar.gz` をダウンロード
+2. ダウンロードしたファイルを解凍:
+```bash
+tar -xzf NoteBeam_*_linux_amd64.tar.gz
+```
+3. `NoteBeam` を実行:
+```bash
+./NoteBeam
+```
+
+オプションで `/usr/local/bin` などにコピーして使用することもできます:
+```bash
+sudo cp NoteBeam /usr/local/bin/
+```
 
 ## TODO 管理（neojot 方式）
 
