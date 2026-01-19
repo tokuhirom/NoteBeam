@@ -17,3 +17,7 @@ export function SaveImage(arg1) {
 export function SaveNote(arg1) {
   return window['go']['main']['App']['SaveNote'](arg1);
 }
+
+export function ShowAboutDialog() {
+  return window['go']['main']['App']['ShowAboutDialog']();
+}
