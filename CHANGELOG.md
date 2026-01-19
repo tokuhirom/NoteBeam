@@ -1,5 +1,8 @@
 # Changelog
 
+## [v0.0.22](https://github.com/tokuhirom/NoteBeam/compare/v0.0.21...v0.0.22) - 2026-01-19
+- feat: add syntax highlighting for TODO types in editor by @tokuhirom in https://github.com/tokuhirom/NoteBeam/pull/61
+
 ## [v0.0.21](https://github.com/tokuhirom/NoteBeam/compare/v0.0.20...v0.0.21) - 2026-01-18
 - fix: add webkit2_41 build tag for Linux builds by @tokuhirom in https://github.com/tokuhirom/NoteBeam/pull/59
 
