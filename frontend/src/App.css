@@ -196,6 +196,37 @@
     margin-right: 2px;
 }
 
+/* TODO Type Coloring in Editor */
+.cm-todo-type-todo {
+    color: #cca700;
+    font-weight: 600;
+}
+
+.cm-todo-type-doing {
+    color: #ff8c00;
+    font-weight: 600;
+}
+
+.cm-todo-type-done {
+    color: #4ec9b0;
+    font-weight: 600;
+}
+
+.cm-todo-type-canceled {
+    color: #888;
+    font-weight: 600;
+}
+
+.cm-todo-type-plan {
+    color: #6796e6;
+    font-weight: 600;
+}
+
+.cm-todo-type-note {
+    color: #c586c0;
+    font-weight: 600;
+}
+
 /* Completed TODO strikethrough */
 .cm-completed-todo {
     text-decoration: line-through;

@@ -16,14 +16,18 @@ import (
 var assets embed.FS
 
 func main() {
-	// Try to acquire instance lock
-	lock := NewInstanceLock()
-	if err := lock.Acquire(); err != nil {
-		slog.Error("failed to acquire lock", "error", err)
-		showErrorDialog("NoteBeam is already running", "Another instance of NoteBeam is already running. Please use the existing window.")
-		os.Exit(1)
+	// Try to acquire instance lock (can be skipped with NOTEBEAM_SKIP_LOCK=1 for development)
+	if os.Getenv("NOTEBEAM_SKIP_LOCK") != "1" {
+		lock := NewInstanceLock()
+		if err := lock.Acquire(); err != nil {
+			slog.Error("failed to acquire lock", "error", err)
+			showErrorDialog("NoteBeam is already running", "Another instance of NoteBeam is already running. Please use the existing window.")
+			os.Exit(1)
+		}
+		defer lock.Release()
+	} else {
+		slog.Info("skipping instance lock (NOTEBEAM_SKIP_LOCK=1)")
 	}
-	defer lock.Release()
 
 	// Create an instance of the app structure
 	app := NewApp()
