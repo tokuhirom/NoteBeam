@@ -125,7 +125,7 @@ func createApplicationMenu(app *App) *menu.Menu {
 // ShowAboutDialog shows the About dialog
 func (a *App) ShowAboutDialog() {
 	message := fmt.Sprintf("NoteBeam\n\nVersion: %s\n\nA simple note-taking app with TODO management.", Version)
-	wailsRuntime.MessageDialog(a.ctx, wailsRuntime.MessageDialogOptions{
+	_, _ = wailsRuntime.MessageDialog(a.ctx, wailsRuntime.MessageDialogOptions{
 		Type:    wailsRuntime.InfoDialog,
 		Title:   "About NoteBeam",
 		Message: message,
