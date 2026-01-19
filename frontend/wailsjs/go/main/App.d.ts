@@ -7,4 +7,4 @@ export function LoadNote():Promise<string>;
 
 export function SaveImage(arg1:string):Promise<string>;
 
-export function SaveNote(arg1:string):Promise<void>;
+export function SaveNote(arg1:string):Promise<main.SaveResult>;

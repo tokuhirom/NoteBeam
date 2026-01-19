@@ -200,6 +200,51 @@ const imagePreviewPlugin = ViewPlugin.fromClass(
     { decorations: (v) => v.decorations }
 )
 
+// ============ TODO Type Coloring ============
+
+const todoTypeMarks: Record<string, Decoration> = {
+    TODO: Decoration.mark({ class: 'cm-todo-type-todo' }),
+    DOING: Decoration.mark({ class: 'cm-todo-type-doing' }),
+    DONE: Decoration.mark({ class: 'cm-todo-type-done' }),
+    CANCELED: Decoration.mark({ class: 'cm-todo-type-canceled' }),
+    PLAN: Decoration.mark({ class: 'cm-todo-type-plan' }),
+    NOTE: Decoration.mark({ class: 'cm-todo-type-note' }),
+}
+
+function buildTodoTypeDecorations(view: EditorView): DecorationSet {
+    const builder = new RangeSetBuilder<Decoration>()
+    const doc = view.state.doc.toString()
+    // Match all TODO types at the start of a line
+    const regex = /^(TODO|DOING|DONE|CANCELED|PLAN|NOTE)(\[[^\]]*\])+:/gm
+    let match
+
+    while ((match = regex.exec(doc)) !== null) {
+        const todoType = match[1]
+        const mark = todoTypeMarks[todoType]
+        if (mark) {
+            // Apply mark only to the type keyword (TODO, DOING, etc.)
+            builder.add(match.index, match.index + todoType.length, mark)
+        }
+    }
+
+    return builder.finish()
+}
+
+const todoTypePlugin = ViewPlugin.fromClass(
+    class {
+        decorations: DecorationSet
+        constructor(view: EditorView) {
+            this.decorations = buildTodoTypeDecorations(view)
+        }
+        update(update: ViewUpdate) {
+            if (update.docChanged) {
+                this.decorations = buildTodoTypeDecorations(update.view)
+            }
+        }
+    },
+    { decorations: (v) => v.decorations }
+)
+
 // ============ Completed TODO Strikethrough ============
 
 const completedTodoMark = Decoration.mark({ class: 'cm-completed-todo' })
@@ -706,6 +751,7 @@ function App() {
                 history(),
                 updateListener,
                 imagePreviewPlugin,
+                todoTypePlugin,
                 completedTodoPlugin,
                 EditorView.lineWrapping
             ]
