@@ -4,6 +4,7 @@
 - build(deps): bump golang.org/x/crypto from 0.45.0 to 0.52.0 by @dependabot[bot] in https://github.com/tokuhirom/NoteBeam/pull/71
 - build(deps-dev): bump vite and @preact/preset-vite in /frontend by @dependabot[bot] in https://github.com/tokuhirom/NoteBeam/pull/70
 - build(deps): bump golang.org/x/net from 0.54.0 to 0.55.0 by @dependabot[bot] in https://github.com/tokuhirom/NoteBeam/pull/68
+- feat: add About menu with version display by @tokuhirom in https://github.com/tokuhirom/NoteBeam/pull/63
 
 ## [v0.0.22](https://github.com/tokuhirom/NoteBeam/compare/v0.0.21...v0.0.22) - 2026-01-19
 - feat: add syntax highlighting for TODO types in editor by @tokuhirom in https://github.com/tokuhirom/NoteBeam/pull/61
